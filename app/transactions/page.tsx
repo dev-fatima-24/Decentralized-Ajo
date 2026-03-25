@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { TransactionTable, type Transaction } from '@/components/transaction-table';
+import { authenticatedFetch } from '@/lib/auth-client';
+
+// The interface and statusVariant are no longer needed here 
+// because they are imported from '@/components/transaction-table'
+
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -21,9 +26,11 @@ export default function TransactionsPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/transactions?page=${p}&sortBy=${sb}&order=${o}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authenticatedFetch(`/api/transactions?page=${p}&sortBy=${sb}&order=${o}`);
+      if (res.status === 401) {
+        router.push('/auth/login');
+        return;
+      }
       if (!res.ok) throw new Error();
       const data = await res.json();
       setTransactions(data.contributions);
