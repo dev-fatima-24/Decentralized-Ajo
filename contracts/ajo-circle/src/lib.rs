@@ -653,9 +653,11 @@ impl AjoCircle {
     }
 
     /// Claim payout when it's a member's turn
+    /// REENTRANCY PROTECTED: Follows Checks-Effects-Interactions pattern
     pub fn claim_payout(env: Env, member: Address) -> Result<i128, AjoError> {
         member.require_auth();
 
+        // CHECKS: Validate all conditions first
         // Block payouts during panic
         if Self::get_circle_status(env.clone()) == CircleStatus::Panicked {
             return Err(AjoError::CirclePanicked);
@@ -704,15 +706,16 @@ impl AjoCircle {
 
             let payout = (circle.member_count as i128) * circle.contribution_amount;
 
-            // Transfer payout from contract to member
-            let token_client = token::Client::new(&env, &circle.token_address);
-            token_client.transfer(&env.current_contract_address(), &member, &payout);
-
+            // EFFECTS: Update state BEFORE external call
             member_data.has_received_payout = true;
             member_data.total_withdrawn += payout;
 
-            members.set(member, member_data);
+            members.set(member.clone(), member_data);
             env.storage().instance().set(&DataKey::Members, &members);
+
+            // INTERACTIONS: External call happens LAST
+            let token_client = token::Client::new(&env, &circle.token_address);
+            token_client.transfer(&env.current_contract_address(), &member, &payout);
 
             Ok(payout)
         } else {
@@ -721,9 +724,11 @@ impl AjoCircle {
     }
 
     /// Perform a partial withdrawal with penalty
+    /// REENTRANCY PROTECTED: Follows Checks-Effects-Interactions pattern
     pub fn partial_withdraw(env: Env, member: Address, amount: i128) -> Result<i128, AjoError> {
         member.require_auth();
 
+        // CHECKS: Validate all conditions first
         // Block partial withdrawals during panic — use emergency_refund instead
         if Self::get_circle_status(env.clone()) == CircleStatus::Panicked {
             return Err(AjoError::CirclePanicked);
@@ -732,6 +737,12 @@ impl AjoCircle {
         if amount <= 0 {
             return Err(AjoError::InvalidInput);
         }
+
+        let circle: CircleData = env
+            .storage()
+            .instance()
+            .get(&DataKey::Circle)
+            .ok_or(AjoError::NotFound)?;
 
         let mut members: Map<Address, MemberData> = env
             .storage()
@@ -748,20 +759,15 @@ impl AjoCircle {
 
             let net_amount = amount - (amount * 10) / 100;
 
-            let circle: CircleData = env
-                .storage()
-                .instance()
-                .get(&DataKey::Circle)
-                .ok_or(AjoError::NotFound)?;
-
-            // Transfer net_amount from contract to member
-            let token_client = token::Client::new(&env, &circle.token_address);
-            token_client.transfer(&env.current_contract_address(), &member, &net_amount);
-
+            // EFFECTS: Update state BEFORE external call
             member_data.total_withdrawn += amount;
 
-            members.set(member, member_data);
+            members.set(member.clone(), member_data);
             env.storage().instance().set(&DataKey::Members, &members);
+
+            // INTERACTIONS: External call happens LAST
+            let token_client = token::Client::new(&env, &circle.token_address);
+            token_client.transfer(&env.current_contract_address(), &member, &net_amount);
 
             Ok(net_amount)
         } else {
@@ -942,9 +948,11 @@ impl AjoCircle {
     /// Distribute funds back to members proportional to their contributions.
     /// Can only be called after the circle has been dissolved via voting.
     /// Returns the refund amount for the calling member.
+    /// REENTRANCY PROTECTED: Follows Checks-Effects-Interactions pattern
     pub fn dissolve_and_refund(env: Env, member: Address) -> Result<i128, AjoError> {
         member.require_auth();
 
+        // CHECKS: Validate all conditions first
         let status: CircleStatus = env
             .storage()
             .instance()
@@ -954,6 +962,12 @@ impl AjoCircle {
         if status != CircleStatus::Dissolved {
             return Err(AjoError::CircleNotActive);
         }
+
+        let circle: CircleData = env
+            .storage()
+            .instance()
+            .get(&DataKey::Circle)
+            .ok_or(AjoError::NotFound)?;
 
         let mut members: Map<Address, MemberData> = env
             .storage()
@@ -970,20 +984,15 @@ impl AjoCircle {
             return Err(AjoError::InsufficientFunds);
         }
 
-        let circle: CircleData = env
-            .storage()
-            .instance()
-            .get(&DataKey::Circle)
-            .ok_or(AjoError::NotFound)?;
-
-        // Transfer refund from contract to member
-        let token_client = token::Client::new(&env, &circle.token_address);
-        token_client.transfer(&env.current_contract_address(), &member, &refund);
-
+        // EFFECTS: Update state BEFORE external call
         member_data.total_withdrawn += refund;
         member_data.status = 2; // Exited
-        members.set(member, member_data);
+        members.set(member.clone(), member_data);
         env.storage().instance().set(&DataKey::Members, &members);
+
+        // INTERACTIONS: External call happens LAST
+        let token_client = token::Client::new(&env, &circle.token_address);
+        token_client.transfer(&env.current_contract_address(), &member, &refund);
 
         Ok(refund)
     }
@@ -1029,13 +1038,21 @@ impl AjoCircle {
 
     /// Emergency refund available to any member when the circle is in `Panicked` state.
     /// Returns (total_contributed − total_withdrawn) to the caller with no penalty.
+    /// REENTRANCY PROTECTED: Follows Checks-Effects-Interactions pattern
     pub fn emergency_refund(env: Env, member: Address) -> Result<i128, AjoError> {
         member.require_auth();
 
+        // CHECKS: Validate all conditions first
         let status = Self::get_circle_status(env.clone());
         if status != CircleStatus::Panicked {
             return Err(AjoError::CircleNotActive);
         }
+
+        let circle: CircleData = env
+            .storage()
+            .instance()
+            .get(&DataKey::Circle)
+            .ok_or(AjoError::NotFound)?;
 
         let mut members: Map<Address, MemberData> = env
             .storage()
@@ -1050,20 +1067,15 @@ impl AjoCircle {
             return Err(AjoError::InsufficientFunds);
         }
 
-        let circle: CircleData = env
-            .storage()
-            .instance()
-            .get(&DataKey::Circle)
-            .ok_or(AjoError::NotFound)?;
-
-        // Transfer refund from contract to member
-        let token_client = token::Client::new(&env, &circle.token_address);
-        token_client.transfer(&env.current_contract_address(), &member, &refund);
-
+        // EFFECTS: Update state BEFORE external call
         member_data.total_withdrawn += refund;
         member_data.status = 2; // Exited
-        members.set(member, member_data);
+        members.set(member.clone(), member_data);
         env.storage().instance().set(&DataKey::Members, &members);
+
+        // INTERACTIONS: External call happens LAST
+        let token_client = token::Client::new(&env, &circle.token_address);
+        token_client.transfer(&env.current_contract_address(), &member, &refund);
 
         Ok(refund)
     }
