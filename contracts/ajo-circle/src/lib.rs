@@ -235,23 +235,51 @@ impl AjoCircle {
             .get(&DataKey::Circle)
             .ok_or(AjoError::NotFound)?;
 
+        // Enforce exact contribution amount — no partial or excess deposits
+        if amount != circle.contribution_amount {
+            return Err(AjoError::InvalidInput);
+        }
+
         let mut members: Map<Address, MemberData> = env
             .storage()
             .instance()
             .get(&DataKey::Members)
             .ok_or(AjoError::NotFound)?;
 
+        // Only registered members may contribute
         let mut member_data = members
             .get(member.clone())
             .ok_or(AjoError::NotFound)?;
 
+        // Block contributions once circle is full
+        if circle.member_count >= circle.max_members {
+            return Err(AjoError::CircleAtCapacity);
+        }
+
         let token_client = token::Client::new(&env, &circle.token_address);
         token_client.transfer(&member, &env.current_contract_address(), &amount);
 
-        member_data.total_contributed += amount;
-        members.set(member, member_data);
-
+        member_data.total_contributed = member_data
+            .total_contributed
+            .checked_add(amount)
+            .ok_or(AjoError::ArithmeticOverflow)?;
+        members.set(member.clone(), member_data);
         env.storage().instance().set(&DataKey::Members, &members);
+
+        // Update total pool
+        let pool: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::TotalPool)
+            .unwrap_or(0_i128);
+        let new_pool = pool.checked_add(amount).ok_or(AjoError::ArithmeticOverflow)?;
+        env.storage().instance().set(&DataKey::TotalPool, &new_pool);
+
+        // Emit deposit event
+        env.events().publish(
+            (symbol_short!("deposit"), member.clone()),
+            amount,
+        );
 
         Ok(())
     }
@@ -317,6 +345,21 @@ impl AjoCircle {
         env.storage().instance().set(&DataKey::RotationOrder, &rotation);
 
         Ok(())
+    }
+
+    // ---------------- QUERIES ----------------
+    pub fn get_total_pool(env: Env) -> i128 {
+        env.storage().instance().get(&DataKey::TotalPool).unwrap_or(0_i128)
+    }
+
+    pub fn get_member_balance(env: Env, member: Address) -> Result<i128, AjoError> {
+        let members: Map<Address, MemberData> = env
+            .storage()
+            .instance()
+            .get(&DataKey::Members)
+            .ok_or(AjoError::NotFound)?;
+        let data = members.get(member).ok_or(AjoError::NotFound)?;
+        Ok(data.total_contributed)
     }
 
     // ---------------- PAYOUT ----------------
