@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
   }
 
+  const userId = payload.userId;
+
   try {
     const stats = await withCache(
       `stats:${payload.userId}`,
