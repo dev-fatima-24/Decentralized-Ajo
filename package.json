@@ -18,7 +18,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "test": "npm run test:contracts",
-    "test:contracts": "cd contracts/ajo-circle && cargo test --lib"
+    "test:contracts": "cd contracts/ajo-circle && cargo test --lib",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
