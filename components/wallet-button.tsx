@@ -31,11 +31,11 @@ export function WalletButton() {
     return (
       <Button
         onClick={connectWallet}
-        disabled={isLoading}
+        isLoading={isLoading}
         variant="outline"
       >
         <Wallet className="mr-2 h-4 w-4" />
-        {isLoading ? 'Connecting...' : 'Connect Wallet'}
+        Connect Wallet
       </Button>
     );
   }

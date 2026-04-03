@@ -18,4 +18,10 @@ describe('Button', () => {
     fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
+
+  it('shows spinner when isLoading is true', () => {
+    render(<Button isLoading>Submit</Button>)
+    const button = screen.getByRole('button')
+    expect(button.querySelector('svg')).toBeInTheDocument()
+  })
 })
