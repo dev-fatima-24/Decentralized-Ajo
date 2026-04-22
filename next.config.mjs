@@ -6,6 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ['winston', 'winston-daily-rotate-file'],
 }
 
 export default nextConfig
