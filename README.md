@@ -280,6 +280,11 @@ The Soroban smart contract (`contracts/ajo-circle/src/lib.rs`) implements:
 - Member records (contributions, withdrawals, payout status)
 - Contribution tracking
 
+#### Operations and Policy Docs
+- Optimization review: `docs/CONTRACT_OPTIMIZATION_REVIEW.md`
+- WASM upgrade + migration policy: `docs/WASM_UPGRADE_POLICY.md`
+- Contributor guide for Postgres CI parity: `docs/CONTRIBUTING.md`
+
 ### Building the Contract
 
 ```bash

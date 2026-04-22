@@ -104,6 +104,32 @@ pnpm prisma studio
 # Opens at http://localhost:5555
 ```
 
+### Mirror CI Locally (Postgres migrate + smoke)
+
+PR CI now runs PostgreSQL with `prisma migrate deploy` plus a minimal DB smoke check.
+To reproduce locally (no secrets required):
+
+```bash
+docker run --name ajo-ci-postgres --rm -d \
+  -e POSTGRES_USER=ci \
+  -e POSTGRES_PASSWORD=ci \
+  -e POSTGRES_DB=ajo_ci \
+  -p 5432:5432 postgres:16
+
+export DATABASE_URL="postgresql://ci:ci@127.0.0.1:5432/ajo_ci?schema=public"
+pnpm prisma generate
+pnpm prisma migrate deploy
+node scripts/ci-db-smoke.mjs
+```
+
+If migration fails, use:
+
+```bash
+pnpm prisma migrate status
+```
+
+If you use SQLite for day-to-day development, still run the Postgres flow above before opening a backend PR.
+
 ---
 
 ## 5. Run the Development Server
@@ -224,6 +250,7 @@ export async function POST(request: NextRequest) {
 2. Run `pnpm prisma migrate dev --name describe-your-change`.
 3. Run `pnpm prisma generate` to update the client.
 4. Update any affected API routes.
+5. Verify Postgres compatibility with `pnpm prisma migrate deploy` against a local Postgres instance.
 
 ### Working on the Smart Contract
 
