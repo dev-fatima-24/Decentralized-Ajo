@@ -8,10 +8,14 @@ import { PlusCircle, Search } from 'lucide-react';
 import { Dashboard } from '@/components/dashboard';
 import DashboardCard from '@/components/DashboardCard';
 import DashboardSkeleton from '@/components/dashboard-skeleton';
+<<<<<<< feat/318
+import { NoUserAjosEmpty } from '@/components/ui/empty-states';
+=======
 import { CircleList } from '@/components/dashboard/circle-list';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+>>>>>>> main
 import {
   Pagination,
   PaginationContent,
@@ -57,6 +61,10 @@ interface UserAjo {
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
+<<<<<<< feat/318
+  useWallet(); // ensures wallet context is available for child components
+=======
+>>>>>>> main
 
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +104,22 @@ export default function DashboardPage() {
       setCircles(nextCircles);
       setTotalPages(data.meta?.pages || 1);
 
+<<<<<<< feat/318
+      // Filter active circles for dashboard overview
+      const activeCircles = data.data?.filter((circle: Circle) => circle.status === 'ACTIVE') || [];
+      const activeGroupsData: AjoGroup[] = activeCircles.slice(0, 3).map((circle: Circle) => {
+        const totalBalance = circle.contributions?.reduce((sum, contrib) => sum + contrib.amount, 0) || 0;
+        const nextCycle = 'Next payout in 5 days';
+
+        return {
+          id: circle.id,
+          name: circle.name,
+          balance: `${totalBalance.toLocaleString()} XLM`,
+          nextCycle,
+        };
+      });
+      setActiveGroups(activeGroupsData);
+=======
       const activeCircles = nextCircles.filter(
         (circle) => circle.status?.toUpperCase() === 'ACTIVE',
       );
@@ -115,6 +139,7 @@ export default function DashboardPage() {
           };
         }),
       );
+>>>>>>> main
     } catch (error) {
       console.error('Error fetching circles:', error);
     } finally {
@@ -151,10 +176,22 @@ export default function DashboardPage() {
       });
   }, [address, isConnected]);
 
+<<<<<<< feat/318
+  // Reset to page 1 when filters change
+=======
+>>>>>>> main
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
+<<<<<<< feat/318
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery('');
+    setStatusFilter('ALL');
+  }, []);
+
+=======
+>>>>>>> main
   return (
     <main className="min-h-screen bg-background">
       <Dashboard activeGroups={activeGroups} loading={loading && isConnected} />
@@ -180,6 +217,9 @@ export default function DashboardPage() {
           {ajosLoading ? (
             <DashboardSkeleton />
           ) : userAjos.length === 0 ? (
+<<<<<<< feat/318
+            <NoUserAjosEmpty />
+=======
             <div className="rounded-lg border-2 border-dashed p-12 text-center">
               <p className="mb-4 text-muted-foreground">
                 You haven&apos;t joined any Ajo groups yet.
@@ -188,6 +228,7 @@ export default function DashboardPage() {
                 <Link href="/circles/join">Browse Ajos</Link>
               </Button>
             </div>
+>>>>>>> main
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {userAjos.map((ajo) => (
@@ -198,6 +239,9 @@ export default function DashboardPage() {
         </div>
       )}
 
+<<<<<<< feat/318
+
+=======
       {!isConnected && (
         <div className="container mx-auto px-4 py-16">
           <div className="rounded-lg border-2 border-dashed p-12 text-center">
@@ -210,6 +254,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+>>>>>>> main
 
       <div className="container mx-auto px-4 py-12">
         <div className="space-y-6">
@@ -233,14 +278,33 @@ export default function DashboardPage() {
                 <TabsList className="border border-border/50 bg-card">
                   <TabsTrigger value="ALL">All</TabsTrigger>
                   <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+<<<<<<< feat/318
+                  <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Button asChild>
+                <Link href="/circles/create">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  New Circle
+                </Link>
+              </Button>
+=======
                   <TabsTrigger value="PENDING">Pending</TabsTrigger>
                   <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
                 </TabsList>
               </Tabs>
+>>>>>>> main
             </div>
           </div>
 
-          <CircleList circles={circles} loading={loading} />
+          <CircleList
+            circles={circles}
+            loading={loading}
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            onClearFilters={handleClearFilters}
+          />
 
           {totalPages > 1 && (
             <div className="flex justify-center">
@@ -260,20 +324,31 @@ export default function DashboardPage() {
                     />
                   </PaginationItem>
 
+<<<<<<< feat/318
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const p = i + 1;
+=======
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, index) => {
                     const page = index + 1;
 
+>>>>>>> main
                     return (
-                      <PaginationItem key={page}>
+                      <PaginationItem key={p}>
                         <PaginationLink
+<<<<<<< feat/318
+                          onClick={() => setCurrentPage(p)}
+                          isActive={p === currentPage}
+                          className="cursor-pointer"
+=======
                           href="#"
                           isActive={currentPage === page}
                           onClick={(event) => {
                             event.preventDefault();
                             setCurrentPage(page);
                           }}
+>>>>>>> main
                         >
-                          {page}
+                          {p}
                         </PaginationLink>
                       </PaginationItem>
                     );

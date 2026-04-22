@@ -6,6 +6,9 @@ import {
   SearchX,
   Users,
   Wallet,
+  Calendar,
+  Bell,
+  ShieldCheck,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -182,6 +185,92 @@ export function NoTransactionsEmpty() {
           <Link href="/circles/join">Join a Circle</Link>
         </Button>
       </EmptyContent>
+    </Empty>
+  )
+}
+
+// ─── 2.7 NoUpcomingCyclesEmpty ────────────────────────────────────────────────
+
+export function NoUpcomingCyclesEmpty() {
+  return (
+    <Empty className="p-4 md:p-6 border-none">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Calendar aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>No upcoming cycles</EmptyTitle>
+        <EmptyDescription>
+          You have no active circles with upcoming payment cycles.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/circles/join">Find a Circle</Link>
+        </Button>
+      </EmptyContent>
+    </Empty>
+  )
+}
+
+// ─── 2.8 NoContributionsEmpty ─────────────────────────────────────────────────
+
+export function NoContributionsEmpty() {
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Wallet aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>No contributions yet</EmptyTitle>
+        <EmptyDescription>
+          There are no contributions in this circle yet. Be the first to contribute!
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+}
+
+// ─── 2.9 NoProposalsEmpty ─────────────────────────────────────────────────────
+
+interface NoProposalsEmptyProps {
+  statusFilter: string
+}
+
+export function NoProposalsEmpty({ statusFilter }: NoProposalsEmptyProps) {
+  const isAll = statusFilter === 'ALL'
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <ShieldCheck aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>
+          {isAll ? 'No proposals yet' : `No ${statusFilter.toLowerCase()} proposals`}
+        </EmptyTitle>
+        <EmptyDescription>
+          {isAll
+            ? 'Create the first governance proposal to get started. Circle members can then vote on it.'
+            : `There are no proposals with status "${statusFilter}" at the moment.`}
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+}
+
+// ─── 2.10 NoNotificationsEmpty ────────────────────────────────────────────────
+
+export function NoNotificationsEmpty() {
+  return (
+    <Empty className="p-8 border-none">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Bell aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>No notifications yet</EmptyTitle>
+        <EmptyDescription>
+          You're all caught up! New updates will appear here.
+        </EmptyDescription>
+      </EmptyHeader>
     </Empty>
   )
 }

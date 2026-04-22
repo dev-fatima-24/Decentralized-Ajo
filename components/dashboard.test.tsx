@@ -26,7 +26,7 @@ describe('Dashboard', () => {
 
     render(<Dashboard activeGroups={[]} />)
 
-    expect(screen.getByText(/wallet disconnected/i)).toBeInTheDocument()
+    expect(screen.getByText(/connect your wallet/i)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /connect wallet/i }))
     expect(connectWallet).toHaveBeenCalledTimes(1)

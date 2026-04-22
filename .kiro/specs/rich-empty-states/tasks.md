@@ -63,27 +63,27 @@ Replace the ad-hoc inline empty-state markup across the Dashboard, Transactions 
     - CTA: `<Link href="/circles/join">` labelled "Join a Circle"
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 9.1–9.5, 10.1, 10.2, 10.3_
 
-- [-] 3. Extend `CircleList` props and wire up conditional empty states
+- [x] 3. Extend `CircleList` props and wire up conditional empty states
   - Add `searchQuery?: string`, `statusFilter?: string`, and `onClearFilters?: () => void` to the `CircleListProps` interface in `components/dashboard/circle-list.tsx`
   - Implement the `hasActiveFilters` check: `(searchQuery?.trim().length ?? 0) > 0 || (statusFilter !== '' && statusFilter !== 'ALL')`
   - Replace the existing single inline empty-state block with a conditional: render `<NoCirclesFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />` when `hasActiveFilters` is true, and `<NoCirclesAllEmpty />` when false
   - Import both variants from `components/ui/empty-states.tsx`
   - _Requirements: 6.1, 6.6, 7.1_
 
-- [~] 4. Update `app/dashboard/page.tsx` to pass filter props to `CircleList` and use `NoUserAjosEmpty`
+- [x] 4. Update `app/dashboard/page.tsx` to pass filter props to `CircleList` and use `NoUserAjosEmpty`
   - Pass `searchQuery={search}`, `statusFilter={statusFilter}`, and `onClearFilters` callback to the `<CircleList>` component (the callback should reset `search` to `''` and `statusFilter` to `''`)
   - Replace the inline "no ajos" `<div>` block (the `userAjos.length === 0` branch) with `<NoUserAjosEmpty />`
   - Import `NoUserAjosEmpty` from `components/ui/empty-states.tsx`
   - _Requirements: 5.1–5.5_
 
-- [~] 5. Update `components/dashboard.tsx` to use `UnauthenticatedDashboardEmpty` and `NoActiveGroupsEmpty`
+- [x] 5. Update `components/dashboard.tsx` to use `UnauthenticatedDashboardEmpty` and `NoActiveGroupsEmpty`
   - Replace the `!isConnected` return block's inline markup with `<UnauthenticatedDashboardEmpty onConnect={connectWallet} isConnecting={isLoading} />`
   - Replace the `activeGroups.length === 0` inline block with `<NoActiveGroupsEmpty />`
   - Remove the now-unused `Wallet`, `Info` Lucide imports and any other imports made redundant by the swap
   - Import both variants from `components/ui/empty-states.tsx`
   - _Requirements: 3.1–3.6, 4.1–4.6_
 
-- [~] 6. Update `app/transactions/page.tsx` to use `NoTransactionsEmpty`
+- [-] 6. Update `app/transactions/page.tsx` to use `NoTransactionsEmpty`
   - Replace the `transactions.length === 0` inline `<div>` block with `<NoTransactionsEmpty />`
   - Import `NoTransactionsEmpty` from `components/ui/empty-states.tsx`
   - _Requirements: 8.1–8.5_
