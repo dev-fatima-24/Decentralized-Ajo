@@ -11,6 +11,7 @@
     "start": "next start",
     "start:server": "node server/dist/index.js",
     "lint": "eslint .",
+    "lint:api": "spectral lint openapi.yaml",
     "test": "npm run test:contracts && npm run test:unit && npm run test:integration",
     "test:unit": "jest --runInBand --selectProjects ui api",
     "test:api": "jest --runInBand --selectProjects api",
